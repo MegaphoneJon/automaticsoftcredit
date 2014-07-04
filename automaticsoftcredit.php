@@ -106,3 +106,16 @@ function automaticsoftcredit_civicrm_caseTypes(&$caseTypes) {
 function automaticsoftcredit_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
   _automaticsoftcredit_civix_civicrm_alterSettingsFolders($metaDataFolders);
 }
+
+/**
+ * Implementation of hook_civicrm_navigationMenu
+ */
+function automaticsoftcredit_civicrm_navigationMenu( &$params ) {
+  // Add menu entry for extension administration page
+  _automaticsoftcredit_civix_insert_navigation_menu($params, 'Administer/Customize Data and Screens', array(
+    'name'       => 'Automatic Soft Credits',
+    'url'        => 'civicrm/admin/setting/auto-soft-credits',
+    'permission' => 'administer CiviCRM',
+  ));
+}
+
