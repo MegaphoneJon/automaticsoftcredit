@@ -151,3 +151,35 @@ function automaticsoftcredit_get_all_relationship_types() {
   return $values;
 }
 
+/* Where the magic happens */
+function automaticsoftcredit_civicrm_post( $op, $objectName, $objectId, &$objectRef ) {
+  if($op == 'create' && $objectName == 'Contribution'){
+    $cid = $objectRef->contact_id;
+
+    //Look up whether this person has a relationship_type_id that's automatically soft credited
+    $params = array(
+     'version' => 3,
+      'sequential' => 1,
+      'contact_id_a' => $cid,
+      'relationship_type_id' => 17, //FIXME: This relationship_type_id is currently hardcoded, we should load it from settings
+    );
+    $result = civicrm_api('Relationship', 'get', $params);
+    watchdog('Auto Soft Credit', "Result Count: " . $result['count']);
+    watchdog('Auto Soft Credit', "Contribution ID: " . $objectId);
+    //if we have the auto soft credit relationship for one or more contacts, create a soft credit for each
+    if($result['count'] > 0) {
+      foreach ($result['values'] as $relationship) {
+        watchdog('Auto Soft Credit', "Contact B: " . $relationship['contact_id_b']);
+        $params = array(
+          'version' => 3,
+          'sequential' => 1,
+          'contribution_id' => $objectId,
+          'contribution_soft_contact_id' => $relationship['contact_id_b'],
+          'amount' => $objectRef->total_amount,
+        );
+        $result = civicrm_api('ContributionSoft', 'create', $params);
+      }
+    }
+
+  }
+}
