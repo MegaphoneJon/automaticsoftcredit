@@ -3,7 +3,7 @@
 require_once 'CRM/Core/Page.php';
 
 class CRM_Automaticsoftcredit_Page_AutoSoftCredit extends CRM_Core_Page {
-  function run() {
+/*  function run() {
     // Example: Set the page-title dynamically; alternatively, declare a static title in xml/Menu/*.xml
     CRM_Utils_System::setTitle(ts('AutoSoftCredit'));
 
@@ -11,5 +11,13 @@ class CRM_Automaticsoftcredit_Page_AutoSoftCredit extends CRM_Core_Page {
     $this->assign('currentTime', date('Y-m-d H:i:s'));
 
     parent::run();
+  }
+*/
+  function buildQuickForm() {
+    $this->addCheckBox(
+      'relationship_type_ids',
+      ts('Relationship Types'),
+      array_flip(autosoftcredit_get_all_relationship_types())
+    );
   }
 }

@@ -119,3 +119,35 @@ function automaticsoftcredit_civicrm_navigationMenu( &$params ) {
   ));
 }
 
+/**
+ * Helper function for storing persistant data
+ * for this extension.
+ **/
+
+function automaticsoftcredit_save_setting($key, $value) {
+  $group = 'Automatic Soft Credits';
+  CRM_Core_BAO_Setting::setItem($value, $group, $key);
+}
+
+/**
+ * Helper function for getting persistant data
+ * for this extension.
+ **/
+
+function automaticsoftcredit_get_setting($key, $default = NULL) {
+  $group = 'Automatic Soft Credits';
+  $ret = CRM_Core_BAO_Setting::getItem($group, $key);
+  if(empty($ret)) return $default;
+  return $ret;
+}
+
+/**
+ * Get all relationship types
+ **/
+
+function automaticsoftcredit_get_all_relationship_types() {
+  $values = array();
+  CRM_Core_PseudoConstant::populate($values, 'CRM_Contact_DAO_RelationshipType', $all = TRUE);
+  return $values;
+}
+
