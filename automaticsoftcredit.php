@@ -159,8 +159,6 @@ function automaticsoftcredit_civicrm_pre($op, $objectName, $id, &$params) {
 
   $cid = $params['contact_id'];
 
-  CRM_Core_Error::debug_var('hi', $cid);
-
   //Look up whether this person has a relationship_type_id that's automatically soft credited
   $apiParams = array(
     'version' => 3,
@@ -170,7 +168,6 @@ function automaticsoftcredit_civicrm_pre($op, $objectName, $id, &$params) {
     'relationship_type_id' => 11, //FIXME: This relationship_type_id is currently hardcoded, we should load it from settings
   );
   $result = civicrm_api('Relationship', 'get', $apiParams);
-CRM_Core_Error::debug_var('relationship result', $result);
 
   //if we have the auto soft credit relationship for one or more contacts, create a soft credit for each
   if($result['count'] > 0) {
@@ -184,8 +181,6 @@ CRM_Core_Error::debug_var('relationship result', $result);
   }
 }
 
-/* Where the magic happens */
-/*
 function automaticsoftcredit_civicrm_post( $op, $objectName, $objectId, &$objectRef ) {
   if($op == 'create' && $objectName == 'Contribution'){
     $cid = $objectRef->contact_id;
@@ -198,12 +193,9 @@ function automaticsoftcredit_civicrm_post( $op, $objectName, $objectId, &$object
       'relationship_type_id' => 11, //FIXME: This relationship_type_id is currently hardcoded, we should load it from settings
     );
     $result = civicrm_api('Relationship', 'get', $params);
-    watchdog('Auto Soft Credit', "Result Count: " . $result['count']);
-    watchdog('Auto Soft Credit', "Contribution ID: " . $objectId);
     //if we have the auto soft credit relationship for one or more contacts, create a soft credit for each
     if($result['count'] > 0) {
       foreach ($result['values'] as $relationship) {
-        watchdog('Auto Soft Credit', "Contact B: " . $relationship['contact_id_b']);
         $params = array(
           'version' => 3,
           'sequential' => 1,
@@ -217,4 +209,3 @@ function automaticsoftcredit_civicrm_post( $op, $objectName, $objectId, &$object
 
   }
 }
-*/
