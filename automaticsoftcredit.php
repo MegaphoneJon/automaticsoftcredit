@@ -151,7 +151,41 @@ function automaticsoftcredit_get_all_relationship_types() {
   return $values;
 }
 
+// This is the main function of this extension, for Civi 4.6.
+function automaticsoftcredit_civicrm_pre($op, $objectName, $id, &$params) {
+  if (!($op == 'create' && $objectName == 'Contribution')) {
+    return;
+  }
+
+  $cid = $params['contact_id'];
+
+  CRM_Core_Error::debug_var('hi', $cid);
+
+  //Look up whether this person has a relationship_type_id that's automatically soft credited
+  $apiParams = array(
+    'version' => 3,
+    'sequential' => 1,
+    'is_active' => 1,
+    'contact_id_a' => $cid,
+    'relationship_type_id' => 11, //FIXME: This relationship_type_id is currently hardcoded, we should load it from settings
+  );
+  $result = civicrm_api('Relationship', 'get', $apiParams);
+CRM_Core_Error::debug_var('relationship result', $result);
+
+  //if we have the auto soft credit relationship for one or more contacts, create a soft credit for each
+  if($result['count'] > 0) {
+    foreach ($result['values'] as $relationship) {
+      $params['soft_credit'][] = array(
+        'contact_id' => $relationship['contact_id_b'],
+        'amount' => $params['total_amount'],
+        'soft_credit_type_id' => NULL,
+      );
+    }
+  }
+}
+
 /* Where the magic happens */
+/*
 function automaticsoftcredit_civicrm_post( $op, $objectName, $objectId, &$objectRef ) {
   if($op == 'create' && $objectName == 'Contribution'){
     $cid = $objectRef->contact_id;
@@ -161,7 +195,7 @@ function automaticsoftcredit_civicrm_post( $op, $objectName, $objectId, &$object
      'version' => 3,
       'sequential' => 1,
       'contact_id_a' => $cid,
-      'relationship_type_id' => 17, //FIXME: This relationship_type_id is currently hardcoded, we should load it from settings
+      'relationship_type_id' => 11, //FIXME: This relationship_type_id is currently hardcoded, we should load it from settings
     );
     $result = civicrm_api('Relationship', 'get', $params);
     watchdog('Auto Soft Credit', "Result Count: " . $result['count']);
@@ -183,3 +217,4 @@ function automaticsoftcredit_civicrm_post( $op, $objectName, $objectId, &$object
 
   }
 }
+*/
