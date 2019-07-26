@@ -1,10 +1,44 @@
-This CiviCRM extension allows you to define a relationship type (e.g. "Automatically Soft Credits/is Automatically Soft Credited By") which, when a contact A having this relationship makes any contribution, contact B is automatically soft credited for the full amount.
+# automaticsoftcredit
 
-Install as any other CiviCRM Extension, then go to *Administer menu > Customize Data and Screens > Automatic Soft Credits*.  Specify the relationship type ID used for automatic soft crediting and enjoy!
+![Screenshot](/images/screenshot.png)
 
-RELEASE NOTES:
-* This extension has only been tested on CiviCRM 4.6, but is likely to work on earlier/later versions.  Older versions (not tagged, sorry) were written to work with Civi 4.4.
-* This is the alpha version - the core functionality works, but the settings menu does not.  For now, the relationship type id is hardcoded in automaticsoftcredits.php.
+(*FIXME: In one or two paragraphs, describe what the extension does and why one would download it. *)
 
+The extension is licensed under [AGPL-3.0](LICENSE.txt).
 
-Author: Jon Goldberg, Palante Technology Cooperative, jon at palantetech dot coop
+## Requirements
+
+* PHP v5.6+
+* CiviCRM (*FIXME: Version number*)
+
+## Installation (Web UI)
+
+This extension has not yet been published for installation via the web UI.
+
+## Installation (CLI, Zip)
+
+Sysadmins and developers may download the `.zip` file for this extension and
+install it with the command-line tool [cv](https://github.com/civicrm/cv).
+
+```bash
+cd <extension-dir>
+cv dl automaticsoftcredit@https://github.com/FIXME/automaticsoftcredit/archive/master.zip
+```
+
+## Installation (CLI, Git)
+
+Sysadmins and developers may clone the [Git](https://en.wikipedia.org/wiki/Git) repo for this extension and
+install it with the command-line tool [cv](https://github.com/civicrm/cv).
+
+```bash
+git clone https://github.com/FIXME/automaticsoftcredit.git
+cv en automaticsoftcredit
+```
+
+## Usage
+
+(* FIXME: Where would a new user navigate to get started? What changes would they see? *)
+
+## Known Issues
+
+(* FIXME *)

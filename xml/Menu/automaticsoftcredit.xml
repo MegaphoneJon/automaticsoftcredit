@@ -1,9 +1,0 @@
-<?xml version="1.0"?>
-<menu>
-  <item>
-    <path>civicrm/admin/setting/auto-soft-credits</path>
-    <page_callback>CRM_Automaticsoftcredit_Page_AutoSoftCredit</page_callback>
-    <title>Automatic Soft Credit Settings</title>
-    <access_arguments>administer CiviCRM</access_arguments>
-  </item>
-</menu>

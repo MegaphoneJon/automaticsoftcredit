@@ -1,5 +1,5 @@
-Package: coop.palantetech.module.automaticsoftcredit
-Copyright (C) 2014, Jon Goldberg <jon@palantetech.coop>
+Package: automaticsoftcredit
+Copyright (C) 2019, Jon Goldberg <jon@megaphonetech.com>
 Licensed under the GNU Affero Public License 3.0 (below).
 
 -------------------------------------------------------------------------------
