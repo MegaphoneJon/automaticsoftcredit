@@ -20,7 +20,7 @@
   <compatibility>
     <ver>5.15</ver>
   </compatibility>
-  <comments>A modern rewrite of an extension I wrote 5 years ago, generalized for public use.</comments>
+  <comments></comments>
   <civix>
     <namespace>CRM/Automaticsoftcredit</namespace>
   </civix>

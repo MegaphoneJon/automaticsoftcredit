@@ -30,8 +30,8 @@ class CRM_Automaticsoftcredit_Upgrader extends CRM_Automaticsoftcredit_Upgrader_
         'is_reserved' => 1,
       ]);
       $directions = [
-        1 => 'Soft Credit Contact B when A gives',
-        2 => 'Soft Credit Contact A when B gives',
+        1 => 'When Contact A gives, soft credit Contact B',
+        2 => 'When Contact B gives, soft credit Contact A',
         3 => 'Soft Credit in both directions',
       ];
       foreach ($directions as $key => $direction) {
@@ -52,7 +52,7 @@ class CRM_Automaticsoftcredit_Upgrader extends CRM_Automaticsoftcredit_Upgrader_
       $customGroups = civicrm_api3('CustomGroup', 'create', [
         'extends' => 'RelationshipType',
         'name' => 'automaticsoftcredit',
-        'title' => E::ts('Automatic Soft Credit Settings'),
+        'title' => E::ts('Automatic Soft Credits'),
       ]);
     }
     $customFields = civicrm_api3('CustomField', 'get', [
@@ -62,13 +62,14 @@ class CRM_Automaticsoftcredit_Upgrader extends CRM_Automaticsoftcredit_Upgrader_
       civicrm_api3('CustomField', 'create', [
         'custom_group_id' => $customGroups['id'],
         'name' => 'softcreditrelationshiptype',
-        'label' => E::ts('Soft Credit Relationship Type'),
+        'label' => E::ts('Soft Credit Type'),
         'data_type' => 'Int',
         'default_value' => NULL,
         'html_type' => 'Select',
         'required' => 0,
         'is_searchable' => 1,
-        'help_post' => E::ts("If this field isn't blank, a soft credit will be created for Contact B any time Contact A makes a contribution."),
+        'help_post' => E::ts("If this field isn't blank, a soft credit will be created whenever someone with this relationship makes a contribution (subject to Soft Credit Direction)."),
+        'weight' => 1,
       ]);
       civicrm_api3('CustomField', 'create', [
         'custom_group_id' => $customGroups['id'],
@@ -76,11 +77,11 @@ class CRM_Automaticsoftcredit_Upgrader extends CRM_Automaticsoftcredit_Upgrader_
         'label' => E::ts('Soft Credit Direction'),
         'data_type' => 'Int',
         'default_value' => 1,
-        'html_type' => 'Radio',
+        'html_type' => 'Select',
         'required' => 1,
         'is_searchable' => 1,
-        'help_post' => E::ts("If this field isn't blank, a soft credit will be created for Contact B any time Contact A makes a contribution."),
         'option_group_id' => $optionGroup['id'],
+        'weight' => 2,
       ]);
     }
   }
