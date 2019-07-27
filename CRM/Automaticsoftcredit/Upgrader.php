@@ -7,6 +7,7 @@ use CRM_Automaticsoftcredit_ExtensionUtil as E;
 class CRM_Automaticsoftcredit_Upgrader extends CRM_Automaticsoftcredit_Upgrader_Base {
 
    private function addCustomData() {
+    // Allow custom fields on relationship type.
     $optionValues = civicrm_api3('OptionValue', 'get', [
       'option_group_id' => 'cg_extend_objects',
       'name' => 'civicrm_relationship_type'
@@ -19,6 +20,30 @@ class CRM_Automaticsoftcredit_Upgrader extends CRM_Automaticsoftcredit_Upgrader_
         'value' => 'RelationshipType',
       ]);
     }
+    $optionGroup = civicrm_api3('OptionGroup', 'get', [
+      'name' => 'auto_soft_credit_directions'
+    ]);
+    if (!$optionGroup['count']) {
+      $optionGroup = civicrm_api3('OptionGroup', 'create', [
+        'name' => 'auto_soft_credit_directions',
+        'title' => E::ts('Automatic Soft Credit Directions'),
+        'is_reserved' => 1,
+      ]);
+      $directions = [
+        1 => 'Soft Credit Contact B when A gives',
+        2 => 'Soft Credit Contact A when B gives',
+        3 => 'Soft Credit in both directions',
+      ];
+      foreach ($directions as $key => $direction) {
+        civicrm_api3('OptionValue', 'create', [
+          'name' => E::ts($direction),
+          'value' => $key,
+          'is_reserved' => 1,
+          'option_group_id' => $optionGroup['id'],
+        ]);
+      }
+    }
+
     $customGroups = civicrm_api3('CustomGroup', 'get', [
       'extends' => 'RelationshipType',
       'name' => 'automaticsoftcredit',
@@ -45,36 +70,32 @@ class CRM_Automaticsoftcredit_Upgrader extends CRM_Automaticsoftcredit_Upgrader_
         'is_searchable' => 1,
         'help_post' => E::ts("If this field isn't blank, a soft credit will be created for Contact B any time Contact A makes a contribution."),
       ]);
+      civicrm_api3('CustomField', 'create', [
+        'custom_group_id' => $customGroups['id'],
+        'name' => 'softcreditdirection',
+        'label' => E::ts('Soft Credit Direction'),
+        'data_type' => 'Int',
+        'default_value' => 1,
+        'html_type' => 'Radio',
+        'required' => 1,
+        'is_searchable' => 1,
+        'help_post' => E::ts("If this field isn't blank, a soft credit will be created for Contact B any time Contact A makes a contribution."),
+        'option_group_id' => $optionGroup['id'],
+      ]);
     }
   }
 
   private function removeCustomData() {
-    $customGroups = civicrm_api3('CustomGroup', 'get', [
-      'extends' => 'RelationshipType',
-      'name' => 'automaticsoftcredit',
-    ]);
-    if ($customGroups['count']) {
-      $customGroupId = $customGroups['id'];
+    $customGroup = civicrm_api3('CustomGroup', 'get', ['name' => 'automaticsoftcredit']);
+    if ($customGroup['count']) {
+      civicrm_api3('CustomGroup', 'delete', ['id' => $customGroup['id']]);
     }
-    civicrm_api3('CustomGroup', 'delete', ['id' => $customGroupId]);
-//
-//    $customFields = civicrm_api3('CustomField', 'get', [
-//      'custom_group_id' => $customGroups['id'],
-//    ]);
-//    if (!$customFields['count']) {
-//      $customField = civicrm_api3('CustomField', 'create', [
-//        'custom_group_id' => $customGroups['id'],
-//        'name' => 'softcreditrelationshiptype',
-//        'label' => E::ts('Soft Credit Relationship Type'),
-//        'data_type' => 'INT',
-//        'default_value' => NULL,
-//        'html_type' => 'Select',
-//        'required' => 0,
-//        'is_searchable' => 1,
-//        'help_post' => "If this field isn't blank, a soft credit will be created for Contact B any time Contact A makes a contribution.",
-//      ]);
-//    }
- }
+
+    $optionGroup = civicrm_api3('OptionGroup', 'get', ['name' => 'auto_soft_credit_directions']);
+    if ($optionGroup['count']) {
+      civicrm_api3('OptionGroup', 'delete', ['id' => $optionGroup['id']]);
+    }
+  }
 
   /**
    * Example: Run an external SQL script when the module is installed.

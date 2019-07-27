@@ -8,24 +8,55 @@ function automaticsoftcredit_civicrm_pre($op, $objectName, $id, &$params) {
   if (!($op == 'create' && $objectName == 'Contribution')) {
     return;
   }
-  $cid = $params['contact_id'];
+  $softCreditTypeField = CRM_Core_BAO_CustomField::getCustomFieldID('softcreditrelationshiptype', NULL, TRUE);
+  $softCreditDirectionField = CRM_Core_BAO_CustomField::getCustomFieldID('softcreditdirection', NULL, TRUE);
   //Look up whether this person has a relationship_type_id that's automatically soft credited
-  $apiParams = array(
-    'version' => 3,
-    'sequential' => 1,
+  $apiParams = [
+    'return' => ["relationship_type_id.$softCreditTypeField", "contact_id_a", "contact_id_b"],
     'is_active' => 1,
-    'contact_id_a' => $cid,
-    'relationship_type_id' => 11, //FIXME: This relationship_type_id is currently hardcoded, we should load it from settings
-  );
-  $result = civicrm_api('Relationship', 'get', $apiParams);
+    'contact_id_a' => $params['contact_id'],
+    "relationship_type_id.$softCreditDirectionField" => ['IN' => [1, 3]],
+    "relationship_type_id.$softCreditTypeField" => ['IS NOT NULL' => 1],
+  ];
+  $result = civicrm_api3('Relationship', 'get', $apiParams)['values'];
+  // Do it again in reverse and append the results that are different.
+  $apiParams = [
+    'return' => ["relationship_type_id.$softCreditTypeField", "contact_id_a", "contact_id_b"],
+    'is_active' => 1,
+    'contact_id_b' => $params['contact_id'],
+    "relationship_type_id.$softCreditDirectionField" => ['IN' => [2, 3]],
+    "relationship_type_id.$softCreditTypeField" => ['IS NOT NULL' => 1],
+  ];
+  $result += civicrm_api3('Relationship', 'get', $apiParams)['values'];
   //if we have the auto soft credit relationship for one or more contacts, create a soft credit for each
-  if ($result['count'] > 0) {
-    foreach ($result['values'] as $relationship) {
-      $params['soft_credit'][] = array(
-        'contact_id' => $relationship['contact_id_b'],
-        'amount' => $params['total_amount'],
-        'soft_credit_type_id' => NULL,
-      );
+  foreach ($result as $relationship) {
+    // Get the correct "other person" in the relationships.
+    if ($relationship['contact_id_a'] == $params['contact_id']) {
+      $softCreditee = $relationship['contact_id_b'];
+    }
+    else {
+      $softCreditee = $relationship['contact_id_a'];
+    }
+    $params['soft_credit'][] = [
+      'contact_id' => $softCreditee,
+      'amount' => $params['total_amount'],
+      'soft_credit_type_id' => $relationship["relationship_type_id.$softCreditTypeField"],
+    ];
+  }
+
+
+}
+
+function automaticsoftcredit_civicrm_fieldOptions($entity, $field, &$options, $params) {
+  if ($entity != 'RelationshipType') {
+    return;
+  }
+  $softCreditTypeField = 'custom_' . CRM_Core_BAO_CustomField::getCustomFieldID('softcreditrelationshiptype');
+  $softCreditDirectionField = 'custom_' . CRM_Core_BAO_CustomField::getCustomFieldID('softcreditdirection');
+  if ($field == $softCreditTypeField) {
+	  $softCreditOptions = civicrm_api3('OptionValue', 'get', ['option_group_id' => "soft_credit_type",])['values'];
+    foreach ($softCreditOptions as $softCreditOption) {
+      $options[$softCreditOption['value']] = $softCreditOption['label'];
     }
   }
 }
