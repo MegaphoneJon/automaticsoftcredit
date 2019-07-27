@@ -1,6 +1,6 @@
-# automaticsoftcredit
+# Automatic Soft Credits
 
-This extension allows you to define automatic soft credits based on a contact's relationship.
+This extension allows you to define automatic soft credits based on a contact's relationship(s).
 
 Some use cases:
 * Any time a person gives, automatically soft credit their spouse and/or household.
