@@ -3,7 +3,9 @@
 require_once 'automaticsoftcredit.civix.php';
 use CRM_Automaticsoftcredit_ExtensionUtil as E;
 
-// This is the main function of this extension, for Civi 4.6.
+/**
+ * Implements hook_civicrm_pre().
+ */
 function automaticsoftcredit_civicrm_pre($op, $objectName, $id, &$params) {
   if (!($op == 'create' && $objectName == 'Contribution')) {
     return;
@@ -43,8 +45,6 @@ function automaticsoftcredit_civicrm_pre($op, $objectName, $id, &$params) {
       'soft_credit_type_id' => $relationship["relationship_type_id.$softCreditTypeField"],
     ];
   }
-
-
 }
 
 function automaticsoftcredit_civicrm_fieldOptions($entity, $field, &$options, $params) {
@@ -54,7 +54,7 @@ function automaticsoftcredit_civicrm_fieldOptions($entity, $field, &$options, $p
   $softCreditTypeField = 'custom_' . CRM_Core_BAO_CustomField::getCustomFieldID('softcreditrelationshiptype');
   $softCreditDirectionField = 'custom_' . CRM_Core_BAO_CustomField::getCustomFieldID('softcreditdirection');
   if ($field == $softCreditTypeField) {
-	  $softCreditOptions = civicrm_api3('OptionValue', 'get', ['option_group_id' => "soft_credit_type",])['values'];
+    $softCreditOptions = civicrm_api3('OptionValue', 'get', ['option_group_id' => "soft_credit_type"])['values'];
     foreach ($softCreditOptions as $softCreditOption) {
       $options[$softCreditOption['value']] = $softCreditOption['label'];
     }
@@ -191,31 +191,3 @@ function automaticsoftcredit_civicrm_alterSettingsFolders(&$metaDataFolders = NU
 function automaticsoftcredit_civicrm_entityTypes(&$entityTypes) {
   _automaticsoftcredit_civix_civicrm_entityTypes($entityTypes);
 }
-
-// --- Functions below this ship commented out. Uncomment as required. ---
-
-/**
- * Implements hook_civicrm_preProcess().
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_preProcess
- *
-function automaticsoftcredit_civicrm_preProcess($formName, &$form) {
-
-} // */
-
-/**
- * Implements hook_civicrm_navigationMenu().
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_navigationMenu
- *
-function automaticsoftcredit_civicrm_navigationMenu(&$menu) {
-  _automaticsoftcredit_civix_insert_navigation_menu($menu, 'Mailings', array(
-    'label' => E::ts('New subliminal message'),
-    'name' => 'mailing_subliminal_message',
-    'url' => 'civicrm/mailing/subliminal',
-    'permission' => 'access CiviMail',
-    'operator' => 'OR',
-    'separator' => 0,
-  ));
-  _automaticsoftcredit_civix_navigationMenu($menu);
-} // */
