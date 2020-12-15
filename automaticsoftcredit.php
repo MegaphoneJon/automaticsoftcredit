@@ -3,47 +3,32 @@
 require_once 'automaticsoftcredit.civix.php';
 use CRM_Automaticsoftcredit_ExtensionUtil as E;
 
-/**
- * Implements hook_civicrm_pre().
- */
-function automaticsoftcredit_civicrm_pre($op, $objectName, $id, &$params) {
+function automaticsoftcredit_civicrm_postCommit($op, $objectName, $objectId, &$objectRef) {
   if (!($op == 'create' && $objectName == 'Contribution')) {
     return;
   }
-  $softCreditTypeField = CRM_Core_BAO_CustomField::getCustomFieldID('softcreditrelationshiptype', NULL, TRUE);
-  $softCreditDirectionField = CRM_Core_BAO_CustomField::getCustomFieldID('softcreditdirection', NULL, TRUE);
+
   //Look up whether this person has a relationship_type_id that's automatically soft credited
-  $apiParams = [
-    'return' => ["relationship_type_id.$softCreditTypeField", "contact_id_a", "contact_id_b"],
-    'is_active' => 1,
-    'contact_id_a' => $params['contact_id'],
-    "relationship_type_id.$softCreditDirectionField" => ['IN' => [1, 3]],
-    "relationship_type_id.$softCreditTypeField" => ['IS NOT NULL' => 1],
-  ];
-  $result = civicrm_api3('Relationship', 'get', $apiParams)['values'];
-  // Do it again in reverse and append the results that are different.
-  $apiParams = [
-    'return' => ["relationship_type_id.$softCreditTypeField", "contact_id_a", "contact_id_b"],
-    'is_active' => 1,
-    'contact_id_b' => $params['contact_id'],
-    "relationship_type_id.$softCreditDirectionField" => ['IN' => [2, 3]],
-    "relationship_type_id.$softCreditTypeField" => ['IS NOT NULL' => 1],
-  ];
-  $result += civicrm_api3('Relationship', 'get', $apiParams)['values'];
-  //if we have the auto soft credit relationship for one or more contacts, create a soft credit for each
-  foreach ($result as $relationship) {
-    // Get the correct "other person" in the relationships.
-    if ($relationship['contact_id_a'] == $params['contact_id']) {
-      $softCreditee = $relationship['contact_id_b'];
+  $relationshipsRaw = \Civi\Api4\RelationshipCache::get(FALSE)
+    ->addSelect('relationship_type.automaticsoftcredit.softcreditrelationshiptype', 'relationship_type.automaticsoftcredit.softcreditdirection', 'far_contact_id', 'orientation')
+    ->addWhere('is_active', '=', TRUE)
+    ->addWhere('near_contact_id', '=', $objectRef->contact_id)
+    ->addWhere('relationship_type.automaticsoftcredit.softcreditrelationshiptype', 'IS NOT NULL', '')
+    ->execute();
+  // Add a soft credit, skipping any relationships that go in the wrong direction.
+  foreach ($relationshipsRaw as $k => $relationship) {
+    if ($relationship['orientation'] === 'a_b' && $relationship['relationship_type.automaticsoftcredit.softcreditdirection'] === 2) {
+      continue;
     }
-    else {
-      $softCreditee = $relationship['contact_id_a'];
+    if ($relationship['orientation'] === 'b_a' && $relationship['relationship_type.automaticsoftcredit.softcreditdirection'] === 1) {
+      continue;
     }
-    $params['soft_credit'][] = [
-      'contact_id' => $softCreditee,
-      'amount' => $params['total_amount'],
-      'soft_credit_type_id' => $relationship["relationship_type_id.$softCreditTypeField"],
-    ];
+    // TODO: Civi 5.33 should support ContributionSoft in API4.
+    civicrm_api3('ContributionSoft', 'create', [
+      'contribution_id' => $objectId,
+      'amount' => $objectRef->total_amount,
+      'contact_id' => $relationship['far_contact_id'],
+    ]);
   }
 }
 
